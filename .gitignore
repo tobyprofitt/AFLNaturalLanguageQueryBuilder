@@ -1,0 +1,6 @@
+# Ignore virtual environment folder
+myenv/
+
+# Other typical Python ignores
+__pycache__/
+.env
