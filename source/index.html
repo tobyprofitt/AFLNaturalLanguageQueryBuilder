@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AFL Stats Query</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5; /* Soft background color */
+            color: #333; /* Main text color */
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .dynamic-header {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            min-height: 1.5em;
+            color: #333; /* Contrasting color for header */
+        }
+        #question-box {
+            width: 50%;
+            height: 50px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 25px; /* Rounded corners */
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            outline: none;
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        #question-box:focus {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Shadow effect on focus */
+        }
+    </style>    
+</head>
+<body>
+    <div class="container">
+        <div class="dynamic-header" id="dynamic-header"></div>
+        <input type="text" id="question-box" placeholder="Type your AFL question...">
+    </div>
+    <script>
+        const prompts = [
+            "Who won the 2021 AFL Grand Final?",
+            "What's the highest score by a player in a single match?",
+            "Which team has the most Brownlow medalists?",
+            // Add as many prompts as you like
+            "Ask any AFL stat question..."
+        ];
+    
+        let currentPromptIndex = 0;
+        let currentCharIndex = 0;
+        let headerElement = document.getElementById('dynamic-header');
+        let backspacing = false;
+    
+        function typePrompt() {
+            if (backspacing) {
+                if (currentCharIndex > 0) {
+                    currentCharIndex--;
+                    headerElement.textContent = prompts[currentPromptIndex].slice(0, currentCharIndex);
+                } else {
+                    backspacing = false;
+                    currentPromptIndex = (currentPromptIndex + 1) % prompts.length;
+                }
+            } else {
+                if (currentCharIndex < prompts[currentPromptIndex].length) {
+                    currentCharIndex++;
+                    headerElement.textContent = prompts[currentPromptIndex].slice(0, currentCharIndex);
+                } else {
+                    // Wait for a bit before backspacing
+                    setTimeout(() => { backspacing = true; }, 2000);
+                }
+            }
+        }
+    
+        setInterval(typePrompt, 100); // Typing speed increased
+    </script>    
+</body>
+</html>
