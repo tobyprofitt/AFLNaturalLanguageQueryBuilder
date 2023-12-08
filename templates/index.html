@@ -37,18 +37,37 @@
         #question-box:focus {
             box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Shadow effect on focus */
         }
+        #submit-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        #submit-button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            color: #007bff;
+        }
     </style>    
 </head>
 <body>
     <div class="container">
         <div class="dynamic-header" id="dynamic-header"></div>
         <input type="text" id="question-box" placeholder="Type your AFL question...">
+        <button id="submit-button">Ask</button>
+        <div id="response"></div>
     </div>
     <script>
         const prompts = [
-            "What is the lowest number of disposals for which a player has received 3 brownlow votes? \nWho was it and what year and round?",
-            "How many games have Christian Petracca and Clayton Oliver played together?",
-            "In how many games did Christian Petracca have more disposals than Clayton Oliver in 2022?",
+            "What is the lowest number of disposals for which a player has received 3 brownlow votes? Who was it and what year and round?",
+            "Who kicked the most goals in a game in 2012?",
+             "How many games have Christian Petracca and Clayton Oliver played together?",
             // Add as many prompts as you like
             "Ask any AFL player match stat question..."
         ];
@@ -78,7 +97,26 @@
             }
         }
     
-        setInterval(typePrompt, 100); // Typing speed increased
+        setInterval(typePrompt, 30);
+
+        // Event listener for the submit button
+        document.getElementById("submit-button").addEventListener("click", function() {
+            let question = document.getElementById("question-box").value;
+            fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("response").innerText = JSON.stringify(data, null, 2);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
     </script>    
 </body>
 </html>
