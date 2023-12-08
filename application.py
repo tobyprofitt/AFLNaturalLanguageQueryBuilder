@@ -7,18 +7,18 @@ import os
 load_dotenv()  # This loads the .env variables into the environment
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 # Setup LangChain and SQLite
 db = SQLDatabase.from_uri("sqlite:///afl.db")
 llm = OpenAI(temperature=0, verbose=True)
 db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
 
-@app.route('/')
+@application.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/query', methods=['POST'])
+@application.route('/query', methods=['POST'])
 def query():
     data = request.json
     question = data['question']
@@ -26,4 +26,4 @@ def query():
     return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)
