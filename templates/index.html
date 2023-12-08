@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AFL Stats Query</title>
+    <title>AFL Stat Bot</title>
     <style>
         body, html {
             height: 100%;
@@ -16,6 +16,7 @@
             justify-content: center;
             align-items: center;
             height: 100%;
+            position: relative; /* Add this line */
         }
         .dynamic-header {
             margin-bottom: 20px;
@@ -52,18 +53,103 @@
         }
         #response {
             margin-top: 20px;
-            color: #007bff;
+            color: #333;
+        }
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%; 
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Adjusted loader CSS */
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey border */
+            border-top: 8px solid #3498db; /* Blue border for the top side */
+            border-radius: 50%;
+            width: 50px; /* Adjust size as needed */
+            height: 50px; /* Adjust size as needed */
+            animation: spin 2s linear infinite;
+            display: none;
+            position: absolute; /* Position absolutely within the relative container */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            margin: -25px 0 0 -25px; /* Adjust margins to center the loader */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>    
 </head>
 <body>
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Welcome to AFL Stat Bot!</h2>
+            <p>Enter your AFL-related questions in the input box and press 'Ask' to get answers.</p>
+            <p><b>Current Limitations:</b></p>
+            <ul>
+                <li>The bot currently only knows players' stats from individual games (such as disposals, tackles, marks etc).</li>
+                <li>It does not currently understand AFL nomenclature at all including clubs, coleman medal, and premierships.</li>
+                <li>Data is limited from 1996 to 2023.</li>
+                <li>It won't understand player name typos. Please use full names and not nicknames.</li>
+                <li>Please use concise langauge when asking questions.</li>
+                <li>It helps to add the word `total` if you want the sum of a stat for a given year.</li>
+                <li>Responses may take a few seconds.</li>
+                <!-- Add more limitations as needed -->
+            </ul>
+        </div>
+    </div>
     <div class="container">
         <div class="dynamic-header" id="dynamic-header"></div>
         <input type="text" id="question-box" placeholder="Type your AFL question...">
         <button id="submit-button">Ask</button>
+        <div id="loader" class="loader"></div>
         <div id="response"></div>
     </div>
     <script>
+        // Load the modal on page load
+        window.onload = function() {
+            var modal = document.getElementById("infoModal");
+            var span = document.getElementsByClassName("close")[0];
+
+            modal.style.display = "block";
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        };
+        
         const prompts = [
             "What is the lowest number of disposals for which a player has received 3 brownlow votes? Who was it and what year and round?",
             "Who kicked the most goals in a game in 2012?",
@@ -102,6 +188,11 @@
         // Event listener for the submit button
         document.getElementById("submit-button").addEventListener("click", function() {
             let question = document.getElementById("question-box").value;
+            let loader = document.getElementById("loader");
+            let responseDiv = document.getElementById("response");
+            loader.style.display = "block";
+            responseDiv.innerText = '';
+
             fetch('/query', {
                 method: 'POST',
                 headers: {
@@ -111,9 +202,11 @@
             })
             .then(response => response.json())
             .then(data => {
+                loader.style.display = "none";
                 document.getElementById("response").innerText = JSON.stringify(data, null, 2);
             })
             .catch((error) => {
+                loader.style.display = "none";
                 console.error('Error:', error);
             });
         });
