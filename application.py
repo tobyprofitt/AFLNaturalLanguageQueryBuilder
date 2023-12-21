@@ -64,22 +64,25 @@ def index():
 
 @application.route('/query', methods=['POST'])
 def query():
-    logger = logging.getLogger("query_route")
-    data = request.json
-    logger.info(f"Data received: {data}")
+    try:
+        logger = logging.getLogger("query_route")
+        data = request.json
+        logger.info(f"Data received: {data}")
 
-    question = data['question']
-    logger.info(f"Question asked: {question}")
+        question = data['question']
+        logger.info(f"Question asked: {question}")
 
-    @capture_print
-    def query_internal():
-        return db_chain.run(TEMPLATE.format(user_question=question), verbose=True)
+        @capture_print
+        def query_internal():
+            return db_chain.run(TEMPLATE.format(user_question=question))
 
-    result, captured_output = query_internal()
-    logger.info("Captured output from db_chain.run: %s", captured_output)
-    logger.info(f"Result: {result}")
+        result, captured_output = query_internal()
+        logger.info("Captured output from db_chain.run: %s", captured_output)
+        logger.info(f"Result: {result}")
 
-    return jsonify(result)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify("Sorry, I couldn't quite figure that one out. Try rephrasing your question, or come back later.")
 
 if __name__ == '__main__':
     application.run(debug=True)
