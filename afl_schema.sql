@@ -9,7 +9,7 @@ CREATE TABLE game (
     tz TEXT,
     venue TEXT,
     localtime TEXT,
-    winner TEXT, -- draw if winner = None
+    winner TEXT, -- draw if winner is null
     complete INTEGER,
     hbehinds INTEGER,
     ascore INTEGER,

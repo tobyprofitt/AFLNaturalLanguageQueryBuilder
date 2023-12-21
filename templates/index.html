@@ -34,6 +34,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow for depth */
             outline: none;
             transition: box-shadow 0.3s ease-in-out;
+            resize: both; /* Allow resizing in both directions */
+            overflow: auto; /* Show a scrollbar if the text overflows */
         }
         #question-box:focus {
             box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Shadow effect on focus */
@@ -114,10 +116,11 @@
             <p><b>Current Limitations:</b></p>
             <ul>
                 <li>The bot currently only knows players' stats from individual games (such as disposals, tackles, marks etc).</li>
-                <li>It does not currently understand AFL nomenclature at all including clubs, coleman medal, and premierships.</li>
+                <li>It does not currently understand AFL nomenclature or rules.</li>
                 <li>Data is limited from 1996 to 2023.</li>
                 <li>It won't understand player name typos. Please use full names and not nicknames.</li>
                 <li>Please use concise langauge when asking questions.</li>
+                <li>Since it is primarily a stats-focused bot, it has a hard time determing what `best` means, use instead `most goals` or `average disposals`.</li>
                 <li>It helps to add the word `total` if you want the sum of a stat for a given year.</li>
                 <li>Responses may take a few seconds.</li>
                 <!-- Add more limitations as needed -->
@@ -126,7 +129,7 @@
     </div>
     <div class="container">
         <div class="dynamic-header" id="dynamic-header"></div>
-        <input type="text" id="question-box" placeholder="Type your AFL question...">
+        <textarea id="question-box" placeholder="Type your AFL question..."></textarea>
         <button id="submit-button">Ask</button>
         <div id="loader" class="loader"></div>
         <div id="response"></div>
