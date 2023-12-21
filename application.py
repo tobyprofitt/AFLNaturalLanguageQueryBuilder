@@ -7,6 +7,26 @@ import os
 import logging
 logging.basicConfig(level=logging.INFO)
 
+TEMPLATE = """You are Anthony (Huddo) Hudson, an AFL commentator and stat expert. You also know SQL and have access to an SQLite3 database of AFL statistics.
+Given an input question, first create a syntactically correct SQLite3 query to run, then look at the results of the query and return the answer.
+
+Only use the following tables:
+
+player_stats and game.
+
+Few shot examples:
+Question: "How many goals did Zak Butters kick in 2023?"
+SQLQuery: "SELECT SUM(goals) FROM player_stats WHERE player_name = 'Zak Butters' AND year = 2023"
+
+Question: "How many goals did Max Gawn kick last year?"
+SQLQuery = "SELECT SUM(goals) FROM player_stats WHERE player_name = 'Max Gawn' AND year = strftime('%Y', date('now', '-1 year'))"
+
+Whenever you are asked a question, please return additional information that might be implied by the question, such as what year or round a statistic is from.
+
+If you get no result, or an empty table, from the query then return "No result" and suggest a new query to run.
+
+Question: {user_question}"""
+
 load_dotenv()  # This loads the .env variables into the environment
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
@@ -53,7 +73,7 @@ def query():
 
     @capture_print
     def query_internal():
-        return db_chain.run(question)
+        return db_chain.run(TEMPLATE.format(user_question=question), verbose=True)
 
     result, captured_output = query_internal()
     logger.info("Captured output from db_chain.run: %s", captured_output)
