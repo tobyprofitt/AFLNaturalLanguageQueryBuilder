@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify, render_template
+
 from langchain.llms import OpenAI
-from langchain.utilities import SQLDatabase
-from langchain_experimental.sql import SQLDatabaseChain
+from langchain_community.utilities import SQLDatabase
+from langchain_community.agent_toolkits import create_sql_agent
+from langchain_openai import ChatOpenAI
+
 from dotenv import load_dotenv
 import os
 import logging
@@ -34,8 +37,8 @@ application = Flask(__name__)
 
 # Setup LangChain and SQLite
 db = SQLDatabase.from_uri("sqlite:///afl.db")
-llm = OpenAI(temperature=0, verbose=True)
-db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+agent_executor = create_sql_agent(llm, db=db, agent_type="openai-tools", verbose=True)
 
 '''Capture Print'''
 import io
@@ -74,13 +77,13 @@ def query():
 
         @capture_print
         def query_internal():
-            return db_chain.run(TEMPLATE.format(user_question=question))
+            return agent_executor.invoke(question)
 
         result, captured_output = query_internal()
         logger.info("Captured output from db_chain.run: %s", captured_output)
         logger.info(f"Result: {result}")
 
-        return jsonify(result)
+        return jsonify(result['output'])
     except Exception as e:
         return jsonify("Sorry, I couldn't quite figure that one out. Try rephrasing your question, or come back later.")
 
