@@ -7,10 +7,11 @@ from langchain_openai import ChatOpenAI
 
 from dotenv import load_dotenv
 import os
+import re
 import logging
 logging.basicConfig(level=logging.INFO)
 
-TEMPLATE = """You are Anthony (Huddo) Hudson, an AFL commentator and stat expert. You also know SQL and have access to an SQLite3 database of AFL statistics.
+TEMPLATE = """You know SQL and have access to an SQLite3 database of AFL statistics.
 Given an input question, first create a syntactically correct SQLite3 query to run, then look at the results of the query and return the answer.
 
 Only use the following tables:
@@ -47,18 +48,19 @@ from contextlib import redirect_stdout
 
 def capture_print(func):
     def wrapper(*args, **kwargs):
-        # Create a new StringIO object
         temp_out = io.StringIO()
-
-        # Redirect stdout to the StringIO object
         with redirect_stdout(temp_out):
             result = func(*args, **kwargs)
-
-        # Get the contents of the StringIO object and then restore stdout
         captured_output = temp_out.getvalue()
+        
+        # Extract SQL query using regular expression
+        sql_query_match = re.search(r"sql_db_query` with `([^`]*)", captured_output)
+        if sql_query_match:
+            sql_query = sql_query_match.group(1)  # Extracted SQL query
+        else:
+            sql_query = "No query found"
 
-        # Return both the function result and the captured output
-        return result, captured_output
+        return result, sql_query
     return wrapper
 
 @application.route('/')
@@ -83,7 +85,8 @@ def query():
         logger.info("Captured output from db_chain.run: %s", captured_output)
         logger.info(f"Result: {result}")
 
-        return jsonify(result['output'])
+        return jsonify({"answer": result['output'], "sql_query": captured_output})
+
     except Exception as e:
         return jsonify("Sorry, I couldn't quite figure that one out. Try rephrasing your question, or come back later.")
 

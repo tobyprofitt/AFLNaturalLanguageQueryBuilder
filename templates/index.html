@@ -127,6 +127,12 @@
             </ul>
         </div>
     </div>
+    <div id="sqlModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeSqlModal">&times;</span>
+            <p id="sqlQueryContent">SQL Query will appear here</p>
+        </div>
+    </div>    
     <div class="container">
         <div class="dynamic-header" id="dynamic-header"></div>
         <textarea id="question-box" placeholder="Type your AFL question..."></textarea>
@@ -206,13 +212,50 @@
             .then(response => response.json())
             .then(data => {
                 loader.style.display = "none";
-                document.getElementById("response").innerText = JSON.stringify(data, null, 2);
+                let answer = data.answer;
+                let sqlQuery = data.sql_query;
+                document.getElementById("response").innerHTML = 
+                    "Answer: " + answer + "<br>" +
+                    "<button id='show-sql'>Show SQL Query</button>";
+
+                // Display SQL query in modal
+                document.getElementById("sqlQueryContent").innerText = sqlQuery;
+
+                // Event listener for SQL modal
+                document.getElementById('show-sql').addEventListener('click', function() {
+                    document.getElementById('sqlModal').style.display = "block";
+                });
+
+                // Close modal when user clicks close button or outside the modal
+                document.getElementById('closeSqlModal').onclick = function() {
+                    document.getElementById('sqlModal').style.display = "none";
+                };
+                window.onclick = function(event) {
+                    if (event.target == document.getElementById('sqlModal')) {
+                        document.getElementById('sqlModal').style.display = "none";
+                    }
+                };
             })
             .catch((error) => {
                 loader.style.display = "none";
                 console.error('Error:', error);
             });
         });
+
+        function sendFeedback(question, sqlQuery, isCorrect) {
+            fetch('/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    question: question, 
+                    sql_query: sqlQuery, 
+                    feedback: isCorrect 
+                })
+            });
+        }
+
     </script>    
 </body>
 </html>
